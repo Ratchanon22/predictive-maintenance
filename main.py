@@ -43,24 +43,39 @@ def run_system():
     for eq in unique_equipments:
         eq_data = df[df['Equipment'] == eq].sort_values('Date')
         latest_rms = eq_data.iloc[-1]['RMS_Value']
-        latest_date = eq_data.iloc[-1]['Date']
         
-        current_status = analyzer.classify_status(latest_rms)
-        dates_list = eq_data['Date'].tolist()
-        rms_list = eq_data['RMS_Value'].tolist()
+        trend, fail_date = predictor.predict_rul_and_plot(
+            eq_data['Date'].tolist(), 
+            eq_data['RMS_Value'].tolist(), 
+            eq, 
+            plots_dir
+        )
         
-        trend, fail_date = predictor.predict_rul_and_plot(dates_list, rms_list, eq, plots_dir)
-        fail_date_str = fail_date.strftime('%d-%b-%Y') if fail_date else "N/A"
+        if latest_rms > 7.1:
+            #  (Zone D)
+            status_display = "🔴 [CRITICAL]"
+        elif latest_rms > 4.5:
+            # (Zone C) 
+            status_display = "🟠 [HIGH VIBRATION]"
+        elif latest_rms > 2.3:
+            #  (Zone B) 
+            status_display = "🟡 [MINOR VIBRATION]"
+        elif trend == "[DANGER]":
+            #  (Predictive Warning)
+            status_display = "⚠️ [PREDICTIVE WARNING]"
+        else:
+            # HEALTHY
+            status_display = "🟢 [HEALTHY]"
+
+        fail_date_str = fail_date.strftime('%d-%b-%Y') if fail_date else "Stable"
         
         report.append({
             'Machine Name': eq,
-            'Latest Date': latest_date.strftime('%d-%b-%Y'),
             'RMS': f"{latest_rms:.4f}",
-            'Status': current_status.split(' ')[0],
-            'Trend': trend.split(' ')[0],
+            'Health Status': status_display,
+            'Trend': trend,
             'Est. Failure': fail_date_str
         })
-
     report_df = pd.DataFrame(report)
     print("-" * 85)
     print("EXECUTIVE SUMMARY REPORT")
