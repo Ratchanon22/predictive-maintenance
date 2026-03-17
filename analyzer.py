@@ -1,20 +1,19 @@
 class ISOAnalyzer:
     def __init__(self):
-        # ISO 10816-3 Thresholds
         self.yellow_limit = 2.3
         self.orange_limit = 4.5
         self.red_limit = 7.1
 
     def classify_status(self, rms_value):
-        """Classifies machine status based on ISO standards with custom English tags."""
+        """Classifies status with clear English descriptions for reports."""
         if rms_value <= self.yellow_limit:
-            return "🟢 [NORMAL] Zone A - Machine is operating normally"
+            return "🟢 [NORMAL] - Healthy condition"
         elif rms_value <= self.orange_limit:
-            return "🟡 [WARNING] Zone B - Acceptable for unrestricted long-term operation"
+            return "🟡 [WARNING] - Minor vibration detected"
         elif rms_value <= self.red_limit:
-            return "🟠 [ALERT] Zone C - Unsatisfactory for long-term operation (Monitor closely)"
+            return "🟠 [ALERT] - Significant vibration (Action required)"
         else:
-            return "🔴 [CRITICAL] Zone D - Vibration causes damage (Immediate action required)"
+            return "🔴 [CRITICAL] - Machine failure / Damage likely"
 
 if __name__ == "__main__":
     print("-" * 50)
